@@ -172,7 +172,9 @@ dynasafe_devops/
 
 ## 文檔
 
-- [架構說明](infrastructure/README.md) - 系統架構和部署指南
+- [完整說明文件](docs/README.md) - 包含架構圖、配置說明、監控儀表板說明
+- [架構圖](docs/architecture-diagram.md) - 系統架構 Mermaid 圖表
+- [架構說明](infrastructure/README.md) - 基礎設施配置說明
 
 ## 授權
 
