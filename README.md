@@ -71,18 +71,14 @@ dynasafe_devops/
 1. **安裝必要工具**
    ```bash
    # 安裝 Docker Desktop
-   # 安裝 Python 3.8+
+   # 安裝 Ansible (macOS)
+   brew install ansible
    ```
 
 2. **自動化部署**
    ```bash
    # 進入 Ansible 目錄
    cd ansible
-   
-   # 創建虛擬環境並安裝依賴
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
    
    # 一鍵部署整個系統
    ./deploy-cluster.sh
@@ -171,6 +167,7 @@ dynasafe_devops/
 - **版本控制**：所有配置都在 Git 中管理
 - **模組化設計**：每個組件獨立的 playbook
 - **跨平台支援**：自動檢測並安裝對應版本的工具
+- **簡化安裝**：使用 Homebrew 安裝 Ansible，無需虛擬環境
 
 ## 文檔
 

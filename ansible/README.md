@@ -33,24 +33,22 @@ The Ansible playbooks deploy:
 ### System Requirements
 - Docker Desktop installed and running
 - Kind (Kubernetes in Docker) - will be installed automatically
-- Ansible 2.9+ installed
+- kubectl - will be installed automatically
+- helm - will be installed automatically
+- Ansible 2.9+ installed via Homebrew
 - At least 8GB RAM for the host machine
 
 ### ✅ Testing Status
-- **Ansible Installation**: ✅ Tested and working
+- **Ansible Installation**: ✅ Ready for brew installation
 - **Playbooks Syntax**: ✅ All playbooks syntax validated
 - **Kind Cluster Setup**: ✅ Ready for deployment
 - **Requirements**: All dependencies verified
 - **Configuration**: Ready for deployment
 
-### Install Ansible
+### Install Prerequisites
 ```bash
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install from requirements.txt
-pip install -r requirements.txt
+# Install Ansible via Homebrew (recommended for macOS)
+brew install ansible
 
 # Verify installation
 ansible --version
@@ -58,31 +56,18 @@ ansible --version
 
 ## 🚀 Quick Start
 
-1. **Configure Inventory**
-   Edit `inventory/hosts.yml` with your target hosts:
-   ```yaml
-   all:
-     children:
-       kubernetes:
-         children:
-           control_plane:
-             hosts:
-               master:
-                 ansible_host: your-master-ip
-                 ansible_user: ubuntu
-           workers:
-             hosts:
-               worker1:
-                 ansible_host: your-worker1-ip
-                 ansible_user: ubuntu
+1. **Install Prerequisites**
+   ```bash
+   # Install Ansible via Homebrew
+   brew install ansible
+   
+   # Verify installation
+   ansible --version
    ```
 
 2. **Deploy Cluster**
    ```bash
    cd ansible
-   
-   # If using virtual environment
-   source venv/bin/activate
    
    # Run deployment
    ./deploy-cluster.sh
