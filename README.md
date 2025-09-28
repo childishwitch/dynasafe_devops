@@ -34,7 +34,7 @@ dynasafe_devops/
 ├── grafana/                  # Grafana 配置
 │   └── provisioning/         # 數據源和儀表板配置
 ├── docs/                     # 文檔和截圖
-│   └── screenshots/          # 監控儀表板截圖
+│   └── screenshots/          # 監控儀表板和部署截圖
 ├── infrastructure/           # 基礎設施配置
 │   ├── README.md             # 架構說明和部署指南
 │   └── helm/                # Helm Charts
@@ -95,18 +95,24 @@ dynasafe_devops/
    # 啟動 ArgoCD port-forward
    kubectl port-forward -n argocd svc/argocd-server 8080:80 &
    
+   # 部署 nginx 示範應用
+   kubectl apply -f applications/nginx/argocd-application.yaml
+   
+   # 設置 nginx port-forward (Kind 環境需要，一般 K8s 環境可直接訪問 NodePort)
+   kubectl port-forward svc/nginx-demo-service 30080:80 &
+   
    # 啟動 Grafana
    docker-compose up -d
+   
+   # 獲取 ArgoCD admin 密碼
+   kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
    ```
 
 3. **訪問服務**
    - **Grafana**: http://localhost:3000 (admin/admin123)
    - **Prometheus**: http://localhost:30090
-   - **ArgoCD**: http://localhost:8080 (admin/自動生成密碼)
-     ```bash
-     # 獲取 ArgoCD admin 密碼
-     kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
-     ```
+   - **ArgoCD**: https://localhost:8080 (admin/上一步獲取的密碼)
+   - **Nginx Demo**: http://localhost:30080 (ArgoCD 部署的示範應用)
 
 ## 監控儀表板
 
@@ -144,6 +150,25 @@ dynasafe_devops/
 #### Errors (錯誤)
 - **Network Errors** - 網路介面錯誤率，包含接收和傳送錯誤
 - **Disk I/O Errors** - 磁碟 I/O 錯誤率，反映磁碟健康狀態
+
+## GitOps 部署
+
+### ArgoCD 部署管理
+使用 ArgoCD 實現 GitOps 工作流程，管理應用程式部署：
+
+![ArgoCD 部署管理](docs/screenshots/argocd.png)
+
+### Nginx 示範應用程式
+通過 ArgoCD 部署的 Nginx 示範應用程式：
+
+![Nginx 示範應用程式](docs/screenshots/nginx.png)
+
+**功能特點：**
+- **GitOps 工作流程** - 配置變更推送到 Git，ArgoCD 自動檢測
+- **手動同步** - 展示 ArgoCD 的手動同步功能
+- **自定義首頁** - 展示 DynaSafe DevOps Demo 資訊
+- **健康檢查** - 包含 liveness 和 readiness probe
+- **資源限制** - CPU 100m, Memory 128Mi
 
 ## 文檔
 

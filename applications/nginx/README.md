@@ -25,7 +25,7 @@ kubectl apply -f applications/nginx/
 
 部署完成後，可通過以下方式訪問：
 - **NodePort**: http://localhost:30080
-- **Port Forward**: `kubectl port-forward svc/nginx-demo-service 8080:80`
+- **Port Forward**: `kubectl port-forward svc/nginx-demo-service 30080:80`
 
 ## 配置說明
 

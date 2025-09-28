@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/your-username/dynasafe_devops
+    repoURL: https://github.com/childishwitch/dynasafe_devops
     targetRevision: HEAD
     path: applications/nginx
   destination:
@@ -17,9 +17,6 @@ spec:
   syncPolicy:
     syncOptions:
     - CreateNamespace=true
-    automated:
-      prune: true
-      selfHeal: true
     retry:
       limit: 5
       backoff:
