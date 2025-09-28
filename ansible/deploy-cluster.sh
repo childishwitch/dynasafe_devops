@@ -48,13 +48,13 @@ ansible-playbook playbooks/05-deploy-monitoring.yml
 echo "🔄 Step 4: Deploying ArgoCD..."
 ansible-playbook playbooks/06-deploy-argocd.yml
 
-# Step 5: Deploy Grafana
-echo "🌐 Step 5: Deploying Grafana..."
-ansible-playbook playbooks/07-deploy-grafana.yml
-
-# Step 6: Deploy Nginx demo
-echo "🚀 Step 6: Deploying Nginx demo..."
+# Step 5: Deploy Nginx demo
+echo "🚀 Step 5: Deploying Nginx demo..."
 ansible-playbook playbooks/08-deploy-nginx-demo.yml
+
+# Step 6: Deploy Grafana
+echo "🌐 Step 6: Deploying Grafana..."
+ansible-playbook playbooks/07-deploy-grafana.yml
 
 echo "✅ Kubernetes cluster deployment completed!"
 echo ""

@@ -38,33 +38,17 @@
     - name: Create monitoring namespace
       shell: kubectl create namespace {{ prometheus_namespace }}
 
-    - name: Deploy Prometheus
+    - name: Deploy monitoring using local Helm chart
       shell: |
-        helm install monitoring prometheus-community/kube-prometheus-stack \
-          --namespace {{ prometheus_namespace }} \
-          --create-namespace \
-          --set prometheus.prometheusSpec.nodeSelector.node-role=infra \
-          --set prometheus.prometheusSpec.tolerations[0].key=node-role \
-          --set prometheus.prometheusSpec.tolerations[0].operator=Equal \
-          --set prometheus.prometheusSpec.tolerations[0].value=infra \
-          --set prometheus.prometheusSpec.tolerations[0].effect=NoSchedule \
-          --set kube-state-metrics.nodeSelector.node-role=infra \
-          --set kube-state-metrics.tolerations[0].key=node-role \
-          --set kube-state-metrics.tolerations[0].operator=Equal \
-          --set kube-state-metrics.tolerations[0].value=infra \
-          --set kube-state-metrics.tolerations[0].effect=NoSchedule
+        helm install monitoring ../infrastructure/helm/monitoring -n {{ prometheus_namespace }}
 
     - name: Wait for Prometheus to be ready
       shell: kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=prometheus -n {{ prometheus_namespace }} --timeout=300s
 
-    - name: Create Grafana service for external access
+    - name: Start Prometheus port-forward
       shell: |
-        kubectl expose service monitoring-grafana \
-          --type=NodePort \
-          --port=3000 \
-          --target-port=3000 \
-          --name=grafana-external \
-          --namespace={{ prometheus_namespace }}
+        kubectl port-forward -n {{ prometheus_namespace }} svc/monitoring-prometheus-server 30090:80 &
+        echo "Prometheus port-forward started on port 30090"
 
     - name: Display monitoring status
       debug:

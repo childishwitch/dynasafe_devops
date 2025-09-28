@@ -14,31 +14,17 @@
     - name: Create ArgoCD namespace
       shell: kubectl create namespace {{ argocd_namespace }}
 
-    - name: Deploy ArgoCD
+    - name: Deploy ArgoCD using local Helm chart
       shell: |
-        helm install argocd argo/argo-cd \
-          --namespace {{ argocd_namespace }} \
-          --create-namespace \
-          --set server.nodeSelector.node-role=application \
-          --set server.tolerations[0].key=node-role \
-          --set server.tolerations[0].operator=Equal \
-          --set server.tolerations[0].value=application \
-          --set server.tolerations[0].effect=NoSchedule \
-          --set server.service.type=NodePort \
-          --set server.service.nodePort=30080 \
-          --set controller.nodeSelector.node-role=application \
-          --set controller.tolerations[0].key=node-role \
-          --set controller.tolerations[0].operator=Equal \
-          --set controller.tolerations[0].value=application \
-          --set controller.tolerations[0].effect=NoSchedule \
-          --set repoServer.nodeSelector.node-role=application \
-          --set repoServer.tolerations[0].key=node-role \
-          --set repoServer.tolerations[0].operator=Equal \
-          --set repoServer.tolerations[0].value=application \
-          --set repoServer.tolerations[0].effect=NoSchedule
+        helm install argocd ../infrastructure/helm/argocd -n {{ argocd_namespace }}
 
     - name: Wait for ArgoCD to be ready
       shell: kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n {{ argocd_namespace }} --timeout=300s
+
+    - name: Start ArgoCD port-forward
+      shell: |
+        kubectl port-forward -n {{ argocd_namespace }} svc/argocd-server 8080:80 &
+        echo "ArgoCD port-forward started on port 8080"
 
     - name: Get ArgoCD admin password
       shell: |
@@ -49,6 +35,6 @@
       debug:
         msg: |
           ArgoCD deployed successfully!
-          URL: http://localhost:30080
+          URL: https://localhost:8080
           Username: admin
           Password: {{ argocd_password.stdout }}

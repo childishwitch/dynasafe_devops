@@ -26,45 +26,9 @@
         sudo mv ./kind /usr/local/bin/kind
       when: kind_version.rc != 0
 
-    - name: Create Kind cluster configuration
-      copy:
-        content: |
-          kind: Cluster
-          apiVersion: kind.x-k8s.io/v1alpha4
-          nodes:
-          - role: control-plane
-            kubeadmConfigPatches:
-            - |
-              kind: InitConfiguration
-              nodeRegistration:
-                kubeletExtraArgs:
-                  node-labels: "node-role.kubernetes.io/control-plane=true"
-          - role: worker
-            kubeadmConfigPatches:
-            - |
-              kind: JoinConfiguration
-              nodeRegistration:
-                kubeletExtraArgs:
-                  node-labels: "node-role=infra"
-          - role: worker
-            kubeadmConfigPatches:
-            - |
-              kind: JoinConfiguration
-              nodeRegistration:
-                kubeletExtraArgs:
-                  node-labels: "node-role=application"
-          - role: worker
-            kubeadmConfigPatches:
-            - |
-              kind: JoinConfiguration
-              nodeRegistration:
-                kubeletExtraArgs:
-                  node-labels: "node-role=application"
-        dest: /tmp/kind-config.yaml
-
-    - name: Create Kind cluster
+    - name: Create Kind cluster using existing config
       shell: |
-        kind create cluster --name dynasafe-cluster --config /tmp/kind-config.yaml
+        kind create cluster --config ../kind-config.yaml --name dynasafe-cluster
       register: kind_create
       ignore_errors: yes
 

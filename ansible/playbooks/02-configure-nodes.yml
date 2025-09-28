@@ -15,22 +15,10 @@
       shell: kubectl get nodes -o name
       register: cluster_nodes
 
-    - name: Apply node labels and taints
+    - name: Run existing node configuration script
       shell: |
-        # Control plane node
-        kubectl label nodes dynasafe-cluster-control-plane node-role.kubernetes.io/control-plane=true --overwrite
-        kubectl taint nodes dynasafe-cluster-control-plane node-role.kubernetes.io/control-plane:NoSchedule --overwrite
-        
-        # Infra node
-        kubectl label nodes dynasafe-cluster-worker node-role=infra --overwrite
-        kubectl taint nodes dynasafe-cluster-worker node-role=infra:NoSchedule --overwrite
-        
-        # Application nodes
-        kubectl label nodes dynasafe-cluster-worker2 node-role=application --overwrite
-        kubectl taint nodes dynasafe-cluster-worker2 node-role=application:NoSchedule --overwrite
-        
-        kubectl label nodes dynasafe-cluster-worker3 node-role=application --overwrite
-        kubectl taint nodes dynasafe-cluster-worker3 node-role=application:NoSchedule --overwrite
+        chmod +x ../scripts/configure-nodes.sh
+        ../scripts/configure-nodes.sh
 
     - name: Verify node configuration
       shell: kubectl get nodes --show-labels

@@ -69,49 +69,31 @@ dynasafe_devops/
 
 1. **安裝必要工具**
    ```bash
-   brew install kind kubectl helm
    # 安裝 Docker Desktop
+   # 安裝 Python 3.8+
    ```
 
-2. **部署系統**
+2. **自動化部署**
    ```bash
-   # 創建叢集
-   kind create cluster --config kind-config.yaml --name dynasafe-cluster
+   # 進入 Ansible 目錄
+   cd ansible
    
-   # 配置節點污點
-   ./scripts/configure-nodes.sh
+   # 創建虛擬環境並安裝依賴
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
    
-   # 部署監控系統
-   kubectl create namespace monitoring
-   helm install monitoring ./infrastructure/helm/monitoring -n monitoring
-   
-   # 部署 ArgoCD
-   kubectl create namespace argocd
-   helm install argocd ./infrastructure/helm/argocd -n argocd
-   
-   # 啟動 Prometheus port-forward
-   kubectl port-forward -n monitoring svc/monitoring-prometheus-server 30090:80 &
-   
-   # 啟動 ArgoCD port-forward
-   kubectl port-forward -n argocd svc/argocd-server 8080:80 &
-   
-   # 部署 nginx 示範應用
-   kubectl apply -f applications/nginx/argocd-application.yaml
-   
-   # 設置 nginx port-forward (Kind 環境需要，一般 K8s 環境可直接訪問 NodePort)
-   kubectl port-forward svc/nginx-demo-service 30080:80 &
-   
-   # 啟動 Grafana
-   docker-compose up -d
-   
-   # 獲取 ArgoCD admin 密碼
-   kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+   # 一鍵部署整個系統
+   ./deploy-cluster.sh
    ```
 
 3. **訪問服務**
-   - **Grafana**: http://localhost:3000 (admin/admin123)
-   - **Prometheus**: http://localhost:30090
-   - **ArgoCD**: https://localhost:8080 (admin/上一步獲取的密碼)
+   ```bash
+   # Prometheus: http://localhost:30090
+   # ArgoCD: https://localhost:8080 (admin/自動生成的密碼)
+   # Grafana: http://localhost:3000 (admin/admin123)
+   # Nginx: http://localhost:30080
+   ```
    - **Nginx Demo**: http://localhost:30080 (ArgoCD 部署的示範應用)
 
 ## 系統架構
@@ -178,23 +160,19 @@ dynasafe_devops/
 - **健康檢查** - 包含 liveness 和 readiness probe
 - **資源限制** - CPU 100m, Memory 128Mi
 
-## 版本說明
+## Infrastructure as Code (IaC)
 
-### Kind 版本 (main branch)
-- 使用 Kind 快速建置本地 K8s 叢集
-- 適合快速展示和測試
-- 包含完整的監控和 GitOps 功能
+本專案採用 **Infrastructure as Code** 方式，使用 Ansible 實現完全自動化的 Kubernetes 叢集部署：
 
-### Ansible 版本 (feature/ansible-automation branch)
-- 使用 Ansible 自動化建置 Kind K8s 叢集
-- 完全符合作業要求的自動化流程
-- 包含完整的監控和 GitOps 功能
-- 支援虛擬環境安裝和測試
-- 自動化節點配置和應用部署
+### 自動化特性
+- **一鍵部署**：從零到完整系統的完全自動化
+- **可重現性**：每次部署結果完全一致
+- **版本控制**：所有配置都在 Git 中管理
+- **模組化設計**：每個組件獨立的 playbook
+- **跨平台支援**：自動檢測並安裝對應版本的工具
 
 ## 文檔
 
 - [完整說明文件](docs/README.md) - 包含架構圖、配置說明、監控儀表板說明
 - [架構圖](docs/architecture-diagram.md) - 系統架構 Mermaid 圖表
-- [架構說明](infrastructure/README.md) - 基礎設施配置說明
 - [Ansible 自動化](ansible/README.md) - 完整的 K8s 叢集自動化部署

@@ -4,13 +4,29 @@ This Ansible project automates the deployment of a Kind-based Kubernetes cluster
 
 ## 🏗️ Architecture
 
+### 叢集架構
+- **Control Plane**: 1個節點，負責叢集管理
+- **Infra Node**: 1個節點，運行監控系統（Prometheus、kube-state-metrics）
+- **Application Nodes**: 2個節點，運行應用程式和 ArgoCD
+
+### 監控架構
+- **Prometheus**: 部署在 infra node，收集監控數據
+- **Node Exporter**: 部署在所有節點，收集節點指標
+- **kube-state-metrics**: 部署在 infra node，收集 Kubernetes 狀態
+- **Grafana**: 部署在叢集外（Docker），提供監控儀表板
+
+### GitOps 架構
+- **ArgoCD**: 部署在 application node，實現 GitOps 部署
+- **Nginx**: 示範應用程式，通過 ArgoCD 管理
+
+### 自動化部署組件
 The Ansible playbooks deploy:
 - **Kind Kubernetes Cluster** (1 control-plane + 3 worker nodes)
 - **Node Configuration** (labels and taints for infra/application separation)
-- **Monitoring Stack** (Prometheus + kube-state-metrics on infra node)
-- **Grafana** (deployed outside cluster using Docker)
-- **GitOps Platform** (ArgoCD on application nodes)
-- **Nginx Demo Application** (deployed via ArgoCD)
+- **Monitoring Stack** (using existing Helm charts in infrastructure/helm/monitoring)
+- **Grafana** (using existing docker-compose.yml and provisioning configs)
+- **GitOps Platform** (using existing Helm charts in infrastructure/helm/argocd)
+- **Nginx Demo Application** (using existing YAML files in applications/nginx)
 
 ## 📋 Prerequisites
 
