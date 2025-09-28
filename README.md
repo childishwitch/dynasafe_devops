@@ -1,5 +1,10 @@
 # DevOps 面試作業 - Kubernetes 監控與部署平台
 
+> [!NOTE]
+> **Ansible 自動化展示版本**  
+> 此分支 (`feature/ansible-automation`) 展示使用 Ansible 實現完整的 Kubernetes 環境自動化部署。  
+> 包含完整的 IaC 配置和部署流程，適合學習和參考使用。
+
 ## 作業概述
 
 本專案使用 kind 架設 Kubernetes 叢集，並整合 Prometheus、Grafana 監控系統以及 ArgoCD 進行 GitOps 部署。

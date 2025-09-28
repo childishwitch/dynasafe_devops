@@ -1,5 +1,10 @@
 # Kind Kubernetes Cluster Automation with Ansible
 
+> [!NOTE]
+> **Ansible 自動化展示版本**  
+> 此分支展示完整的 Ansible 自動化部署能力。  
+> 包含完整的 IaC 配置和部署流程，適合學習和參考使用。
+
 This Ansible project automates the deployment of a Kind-based Kubernetes cluster with monitoring and GitOps capabilities, following the DevOps interview requirements.
 
 ## 🏗️ Architecture
