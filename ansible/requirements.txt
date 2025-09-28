@@ -1,0 +1,4 @@
+# Ansible Collection Requirements
+ansible>=2.9.0
+kubernetes>=2.0.0
+community.kubernetes>=2.0.0

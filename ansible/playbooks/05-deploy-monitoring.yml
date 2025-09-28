@@ -1,0 +1,99 @@
+---
+- name: Deploy monitoring stack
+  hosts: control_plane
+  become: yes
+  tasks:
+    - name: Install Helm
+      shell: |
+        curl https://get.helm.sh/helm-v3.12.0-linux-amd64.tar.gz -o helm.tar.gz
+        tar -zxvf helm.tar.gz
+        mv linux-amd64/helm /usr/local/bin/helm
+        chmod +x /usr/local/bin/helm
+        rm -rf helm.tar.gz linux-amd64
+
+    - name: Add Prometheus Helm repository
+      kubernetes.core.helm_repository:
+        name: prometheus-community
+        repo_url: https://prometheus-community.github.io/helm-charts
+
+    - name: Create monitoring namespace
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ prometheus_namespace }}"
+
+    - name: Deploy Prometheus
+      kubernetes.core.helm:
+        name: monitoring
+        chart_ref: prometheus-community/kube-prometheus-stack
+        release_namespace: "{{ prometheus_namespace }}"
+        values:
+          prometheus:
+            prometheusSpec:
+              nodeSelector:
+                node-role: infra
+              tolerations:
+                - key: "node-role"
+                  operator: "Equal"
+                  value: "infra"
+                  effect: "NoSchedule"
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+          kube-state-metrics:
+            nodeSelector:
+              node-role: infra
+            tolerations:
+              - key: "node-role"
+                operator: "Equal"
+                value: "infra"
+                effect: "NoSchedule"
+          nodeExporter:
+            nodeSelector:
+              node-role: infra
+            tolerations:
+              - key: "node-role"
+                operator: "Equal"
+                value: "infra"
+                effect: "NoSchedule"
+
+    - name: Wait for Prometheus to be ready
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ prometheus_namespace }}"
+        label_selectors:
+          - app.kubernetes.io/name=prometheus
+      register: prometheus_pods
+      until: prometheus_pods.resources | length > 0
+      retries: 30
+      delay: 10
+
+    - name: Create Grafana service for external access
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: grafana-external
+            namespace: "{{ prometheus_namespace }}"
+          spec:
+            type: NodePort
+            ports:
+              - port: 3000
+                targetPort: 3000
+                nodePort: 30000
+            selector:
+              app.kubernetes.io/name: grafana
+
+    - name: Display monitoring status
+      debug:
+        msg: "Monitoring stack deployed successfully!"

@@ -1,0 +1,86 @@
+---
+- name: Deploy ArgoCD
+  hosts: control_plane
+  become: yes
+  tasks:
+    - name: Add ArgoCD Helm repository
+      kubernetes.core.helm_repository:
+        name: argo
+        repo_url: https://argoproj.github.io/argo-helm
+
+    - name: Create ArgoCD namespace
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ argocd_namespace }}"
+
+    - name: Deploy ArgoCD
+      kubernetes.core.helm:
+        name: argocd
+        chart_ref: argo/argo-cd
+        release_namespace: "{{ argocd_namespace }}"
+        values:
+          global:
+            namespace: "{{ argocd_namespace }}"
+          server:
+            nodeSelector:
+              node-role: application
+            tolerations:
+              - key: "node-role"
+                operator: "Equal"
+                value: "application"
+                effect: "NoSchedule"
+            service:
+              type: NodePort
+              nodePort: 30080
+            resources:
+              requests:
+                cpu: 200m
+                memory: 256Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
+          controller:
+            nodeSelector:
+              node-role: application
+            tolerations:
+              - key: "node-role"
+                operator: "Equal"
+                value: "application"
+                effect: "NoSchedule"
+          repoServer:
+            nodeSelector:
+              node-role: application
+            tolerations:
+              - key: "node-role"
+                operator: "Equal"
+                value: "application"
+                effect: "NoSchedule"
+
+    - name: Wait for ArgoCD to be ready
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ argocd_namespace }}"
+        label_selectors:
+          - app.kubernetes.io/name=argocd-server
+      register: argocd_pods
+      until: argocd_pods.resources | length > 0
+      retries: 30
+      delay: 10
+
+    - name: Get ArgoCD admin password
+      shell: |
+        kubectl -n {{ argocd_namespace }} get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+      register: argocd_password
+
+    - name: Display ArgoCD access information
+      debug:
+        msg: |
+          ArgoCD deployed successfully!
+          URL: http://localhost:30080
+          Username: admin
+          Password: {{ argocd_password.stdout }}

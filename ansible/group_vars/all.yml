@@ -1,0 +1,30 @@
+# Kubernetes 配置
+kube_version: "1.30.0"
+kube_cni: "flannel"
+kube_pod_cidr: "10.244.0.0/16"
+kube_service_cidr: "10.96.0.0/12"
+
+# 節點配置
+node_labels:
+  control_plane:
+    - "node-role.kubernetes.io/control-plane"
+  infra:
+    - "node-role=infra"
+  application:
+    - "node-role=application"
+
+node_taints:
+  control_plane:
+    - "node-role.kubernetes.io/control-plane:NoSchedule"
+  infra:
+    - "node-role=infra:NoSchedule"
+  application:
+    - "node-role=application:NoSchedule"
+
+# 監控配置
+prometheus_namespace: "monitoring"
+grafana_admin_password: "admin123"
+
+# ArgoCD 配置
+argocd_namespace: "argocd"
+argocd_admin_password: "admin123"
