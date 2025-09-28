@@ -114,6 +114,14 @@ dynasafe_devops/
    - **ArgoCD**: https://localhost:8080 (admin/上一步獲取的密碼)
    - **Nginx Demo**: http://localhost:30080 (ArgoCD 部署的示範應用)
 
+## 系統架構
+
+### 整體架構圖
+![整體架構圖](docs/screenshots/overall_architecture.png)
+
+### 監控架構圖
+![監控架構圖](docs/screenshots/monitoring_diagram.png)
+
 ## 監控儀表板
 
 ### 1. Cluster 效能監控儀表板

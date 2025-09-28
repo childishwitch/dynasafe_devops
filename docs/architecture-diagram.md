@@ -193,6 +193,12 @@ graph TB
   - `datasources/prometheus.yml` - Prometheus 數據源
   - `dashboards/` - 監控儀表板配置
 
+## 架構圖 PNG 檔案
+
+### 系統架構圖
+- `docs/screenshots/overall_architecture.png` - 整體系統架構圖
+- `docs/screenshots/monitoring_diagram.png` - 監控架構圖
+
 ## 監控儀表板截圖
 
 ### Grafana 儀表板
