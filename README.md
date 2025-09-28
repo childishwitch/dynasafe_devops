@@ -33,6 +33,8 @@ dynasafe_devops/
 │   └── configure-nodes.sh    # 節點配置腳本
 ├── grafana/                  # Grafana 配置
 │   └── provisioning/         # 數據源和儀表板配置
+├── docs/                     # 文檔和截圖
+│   └── screenshots/          # 監控儀表板截圖
 ├── infrastructure/           # 基礎設施配置
 │   ├── README.md             # 架構說明和部署指南
 │   └── helm/                # Helm Charts
@@ -54,12 +56,21 @@ dynasafe_devops/
 - **Grafana**: v12.2.0 (監控儀表板)
 - **ArgoCD**: v2.10+ (GitOps 部署)
 
+### 系統架構
+
+本專案實現了完整的 Kubernetes 監控與 GitOps 部署平台：
+
+- **Kubernetes 叢集**: 使用 kind 創建 1 個 control-plane + 3 個 worker 節點
+- **監控系統**: Prometheus + Grafana + Node Exporter + kube-state-metrics
+- **GitOps 部署**: ArgoCD 管理應用程式部署
+- **節點配置**: 1 個 infra node + 2 個 application node
+
 ### 快速開始
 
 1. **安裝必要工具**
    ```bash
-   brew install kind kubectl
-   # 並安裝 Docker Desktop
+   brew install kind kubectl helm
+   # 安裝 Docker Desktop
    ```
 
 2. **部署系統**
@@ -79,8 +90,6 @@ dynasafe_devops/
    
    # 啟動 Grafana
    docker-compose up -d
-   
-   # 詳細步驟請參考 infrastructure/README.md
    ```
 
 3. **訪問服務**
@@ -91,14 +100,39 @@ dynasafe_devops/
 ## 監控儀表板
 
 ### 1. Cluster 效能監控儀表板
-- 叢集整體資源使用情況
-- 節點狀態和健康度
-- Pod 分佈和狀態
+呈現叢集整體效能監控數據，包含以下 6 個監控面板：
+
+![Cluster 效能監控儀表板](docs/screenshots/grafana_dashboards_cluster.png)
+
+**面板內容說明：**
+- **CPU 使用率** - 顯示各節點的 CPU 使用百分比，包含 1m、5m、15m 負載平均值
+- **記憶體使用率** - 顯示各節點的記憶體使用百分比和可用記憶體
+- **磁碟使用率** - 顯示各節點不同掛載點的磁碟使用情況
+- **網路流量** - 顯示各節點的網路接收/傳送流量（KiB/s）
+- **Pod 分佈** - 顯示各節點上運行的 Pod 數量分佈
+- **節點狀態** - 顯示節點基本信息和內核版本
 
 ### 2. USE 角度監控儀表板
-- **Utilization**: CPU、記憶體、網路、磁碟使用率
-- **Saturation**: 佇列長度、等待時間
-- **Errors**: 錯誤率、失敗次數
+呈現 USE（Utilization、Saturation、Errors）角度的效能監控數據：
+
+![USE 角度監控儀表板](docs/screenshots/grafana_dashboards_use.png)
+
+**面板內容說明：**
+
+#### Utilization (使用率)
+- **CPU Utilization** - CPU 使用率，顯示各節點 CPU 資源使用情況
+- **Memory Utilization** - 記憶體使用率，顯示各節點記憶體資源使用情況
+- **Disk Utilization** - 磁碟使用率，顯示各節點磁碟空間使用情況
+- **Network Utilization** - 網路使用率，顯示各節點網路接收/傳送流量
+
+#### Saturation (飽和度)
+- **CPU Saturation (Load Average)** - CPU 負載平均值，包含 1m、5m、15m 負載
+- **CPU Saturation (Context Switches)** - CPU 上下文切換次數，反映 CPU 飽和度
+- **Network Saturation (Drops)** - 網路丟包情況，反映網路介面飽和度
+
+#### Errors (錯誤)
+- **Network Errors** - 網路介面錯誤率，包含接收和傳送錯誤
+- **Disk I/O Errors** - 磁碟 I/O 錯誤率，反映磁碟健康狀態
 
 ## 文檔
 
