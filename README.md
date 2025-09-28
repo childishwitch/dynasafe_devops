@@ -28,8 +28,11 @@
 dynasafe_devops/
 ├── README.md                 # 專案說明文件
 ├── kind-config.yaml          # kind 叢集配置
+├── docker-compose.yml        # Grafana Docker Compose 配置
 ├── scripts/                  # 部署腳本
 │   └── configure-nodes.sh    # 節點配置腳本
+├── grafana/                  # Grafana 配置
+│   └── provisioning/         # 數據源和儀表板配置
 ├── infrastructure/           # 基礎設施配置
 │   ├── README.md             # 架構說明和部署指南
 │   └── helm/                # Helm Charts
@@ -45,9 +48,10 @@ dynasafe_devops/
 - **Docker Desktop**: 4.47.0+ (用於運行 kind 和 Grafana)
 - **kind**: v0.30.0+ (Kubernetes 叢集管理)
 - **kubectl**: v1.34.1+ (Kubernetes 命令行工具)
-- **Kubernetes**: v1.30+ (透過 kind 部署)
-- **Prometheus**: v2.50+ (監控數據收集)
-- **Grafana**: v11.0+ (監控儀表板)
+- **Helm**: v3.19.0+ (Kubernetes 套件管理)
+- **Kubernetes**: v1.34.0 (透過 kind 部署)
+- **Prometheus**: v2.48.0 (監控數據收集)
+- **Grafana**: v12.2.0 (監控儀表板)
 - **ArgoCD**: v2.10+ (GitOps 部署)
 
 ### 快速開始
@@ -66,12 +70,23 @@ dynasafe_devops/
    # 配置節點污點
    ./scripts/configure-nodes.sh
    
+   # 部署監控系統
+   kubectl create namespace monitoring
+   helm install monitoring ./infrastructure/helm/monitoring -n monitoring
+   
+   # 啟動 Prometheus port-forward
+   kubectl port-forward -n monitoring svc/monitoring-prometheus-server 30090:80 &
+   
+   # 啟動 Grafana
+   docker-compose up -d
+   
    # 詳細步驟請參考 infrastructure/README.md
    ```
 
 3. **訪問服務**
-   - Grafana: http://localhost:3000
-   - ArgoCD: 通過 kubectl port-forward 訪問
+   - **Grafana**: http://localhost:3000 (admin/admin123)
+   - **Prometheus**: http://localhost:30090 (通過 port-forward)
+   - **ArgoCD**: 通過 kubectl port-forward 訪問
 
 ## 監控儀表板
 
