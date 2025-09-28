@@ -28,16 +28,14 @@
 dynasafe_devops/
 ├── README.md                 # 專案說明文件
 ├── kind-config.yaml          # kind 叢集配置
-├── monitoring/               # 監控系統配置
-│   ├── prometheus/           # Prometheus 配置
-│   ├── grafana/              # Grafana 配置
-│   └── node-exporter/        # Node Exporter 配置
-├── argocd/                   # ArgoCD 配置
-├── applications/             # 應用程式配置
-│   └── nginx/                # Nginx 示範應用
-└── docs/                     # 文檔和截圖
-    ├── architecture.md       # 架構說明
-    └── screenshots/          # 螢幕截圖
+├── infrastructure/           # 基礎設施配置
+│   ├── README.md             # 架構說明和部署指南
+│   ├── node-config.yaml     # 節點配置
+│   └── helm/                # Helm Charts
+│       ├── monitoring/       # 監控系統
+│       └── argocd/          # ArgoCD
+└── applications/             # 應用程式配置
+    └── nginx/                # Nginx 示範應用
 ```
 
 ## 環境需求
@@ -61,8 +59,7 @@ dynasafe_devops/
 
 2. **部署系統**
    ```bash
-   # 詳細步驟請參考 docs/architecture.md
-   kind create cluster --config kind-config.yaml --name dynasafe-cluster
+   # 詳細步驟請參考 infrastructure/README.md
    ```
 
 3. **訪問服務**
@@ -83,8 +80,7 @@ dynasafe_devops/
 
 ## 文檔
 
-- [架構圖](docs/architecture.md) - 系統架構說明
-- [監控儀表板截圖](docs/screenshots/) - 監控介面截圖
+- [架構說明](infrastructure/README.md) - 系統架構和部署指南
 
 ## 授權
 

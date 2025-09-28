@@ -1,0 +1,7 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane  # dynasafe-cluster-control-plane
+- role: worker         # dynasafe-cluster-worker (infra)
+- role: worker         # dynasafe-cluster-worker2 (application)
+- role: worker         # dynasafe-cluster-worker3 (application)
