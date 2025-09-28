@@ -85,8 +85,15 @@ dynasafe_devops/
    kubectl create namespace monitoring
    helm install monitoring ./infrastructure/helm/monitoring -n monitoring
    
+   # 部署 ArgoCD
+   kubectl create namespace argocd
+   helm install argocd ./infrastructure/helm/argocd -n argocd
+   
    # 啟動 Prometheus port-forward
    kubectl port-forward -n monitoring svc/monitoring-prometheus-server 30090:80 &
+   
+   # 啟動 ArgoCD port-forward
+   kubectl port-forward -n argocd svc/argocd-server 8080:80 &
    
    # 啟動 Grafana
    docker-compose up -d
@@ -94,8 +101,12 @@ dynasafe_devops/
 
 3. **訪問服務**
    - **Grafana**: http://localhost:3000 (admin/admin123)
-   - **Prometheus**: http://localhost:30090 (通過 port-forward)
-   - **ArgoCD**: 通過 kubectl port-forward 訪問
+   - **Prometheus**: http://localhost:30090
+   - **ArgoCD**: http://localhost:8080 (admin/自動生成密碼)
+     ```bash
+     # 獲取 ArgoCD admin 密碼
+     kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+     ```
 
 ## 監控儀表板
 

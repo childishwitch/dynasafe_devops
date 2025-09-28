@@ -135,7 +135,7 @@ helm repo update
 kubectl create namespace argocd
 
 # 部署 ArgoCD
-helm install argocd ./infrastructure/helm/argocd -n argocd
+helm install argocd ./helm/argocd -n argocd
 
 # 等待 ArgoCD 就緒
 kubectl wait --for=condition=Available deployment/argocd-server -n argocd --timeout=300s
