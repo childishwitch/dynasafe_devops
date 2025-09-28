@@ -12,23 +12,23 @@
       shell: helm repo update
 
     - name: Create ArgoCD namespace
-      shell: kubectl create namespace {{ argocd_namespace }}
+      shell: kubectl create namespace argocd
 
     - name: Deploy ArgoCD using local Helm chart
       shell: |
-        helm install argocd ../infrastructure/helm/argocd -n {{ argocd_namespace }}
+        helm install argocd ../infrastructure/helm/argocd -n argocd
 
     - name: Wait for ArgoCD to be ready
-      shell: kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n {{ argocd_namespace }} --timeout=300s
+      shell: kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
 
     - name: Start ArgoCD port-forward
       shell: |
-        kubectl port-forward -n {{ argocd_namespace }} svc/argocd-server 8080:80 &
+        kubectl port-forward -n argocd svc/argocd-server 8080:80 &
         echo "ArgoCD port-forward started on port 8080"
 
     - name: Get ArgoCD admin password
       shell: |
-        kubectl -n {{ argocd_namespace }} get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+        kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
       register: argocd_password
 
     - name: Display ArgoCD access information

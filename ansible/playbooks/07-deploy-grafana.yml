@@ -9,27 +9,9 @@
         curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         chmod +x /usr/local/bin/docker-compose
 
-    - name: Create Grafana directory
-      file:
-        path: /opt/grafana
-        state: directory
-        mode: '0755'
-
-    - name: Copy existing docker-compose.yml
-      copy:
-        src: ../docker-compose.yml
-        dest: /opt/grafana/docker-compose.yml
-        mode: '0644'
-
-    - name: Copy existing Grafana provisioning configuration
-      copy:
-        src: ../grafana/provisioning/
-        dest: /opt/grafana/
-        mode: '0644'
-
-    - name: Start Grafana
+    - name: Start Grafana using existing docker-compose.yml
       shell: |
-        docker-compose up -d
+        cd .. && docker-compose up -d
 
     - name: Wait for Grafana to be ready
       wait_for:

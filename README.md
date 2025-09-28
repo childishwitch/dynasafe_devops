@@ -29,19 +29,20 @@ dynasafe_devops/
 ├── README.md                 # 專案說明文件
 ├── kind-config.yaml          # kind 叢集配置
 ├── docker-compose.yml        # Grafana Docker Compose 配置
-├── scripts/                  # 部署腳本
-│   └── configure-nodes.sh    # 節點配置腳本
 ├── grafana/                  # Grafana 配置
 │   └── provisioning/         # 數據源和儀表板配置
 ├── docs/                     # 文檔和截圖
 │   └── screenshots/          # 監控儀表板和部署截圖
 ├── infrastructure/           # 基礎設施配置
-│   ├── README.md             # 架構說明和部署指南
 │   └── helm/                # Helm Charts
 │       ├── monitoring/       # 監控系統
 │       └── argocd/          # ArgoCD
-└── applications/             # 應用程式配置
-    └── nginx/                # Nginx 示範應用
+├── applications/             # 應用程式配置
+│   └── nginx/                # Nginx 示範應用
+└── ansible/                  # Ansible 自動化
+    ├── playbooks/            # 部署腳本
+    ├── scripts/              # 輔助腳本
+    └── inventory/            # 主機配置
 ```
 
 ## 環境需求

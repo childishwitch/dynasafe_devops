@@ -15,10 +15,10 @@
       shell: kubectl get nodes -o name
       register: cluster_nodes
 
-    - name: Run existing node configuration script
+    - name: Run node configuration script
       shell: |
-        chmod +x ../scripts/configure-nodes.sh
-        ../scripts/configure-nodes.sh
+        chmod +x scripts/configure-nodes.sh
+        scripts/configure-nodes.sh
 
     - name: Verify node configuration
       shell: kubectl get nodes --show-labels
