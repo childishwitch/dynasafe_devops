@@ -28,9 +28,10 @@
 dynasafe_devops/
 ├── README.md                 # 專案說明文件
 ├── kind-config.yaml          # kind 叢集配置
+├── scripts/                  # 部署腳本
+│   └── configure-nodes.sh    # 節點配置腳本
 ├── infrastructure/           # 基礎設施配置
 │   ├── README.md             # 架構說明和部署指南
-│   ├── node-config.yaml     # 節點配置
 │   └── helm/                # Helm Charts
 │       ├── monitoring/       # 監控系統
 │       └── argocd/          # ArgoCD
@@ -59,6 +60,12 @@ dynasafe_devops/
 
 2. **部署系統**
    ```bash
+   # 創建叢集
+   kind create cluster --config kind-config.yaml --name dynasafe-cluster
+   
+   # 配置節點污點
+   ./scripts/configure-nodes.sh
+   
    # 詳細步驟請參考 infrastructure/README.md
    ```
 

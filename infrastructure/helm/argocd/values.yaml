@@ -1,0 +1,60 @@
+# ArgoCD Configuration
+# ArgoCD 配置
+
+# Global settings
+global:
+  namespace: argocd
+
+# ArgoCD configuration
+argo-cd:
+  enabled: true
+  server:
+    nodeSelector:
+      node-role: application
+    tolerations:
+    - key: "node-role"
+      operator: "Equal"
+      value: "application"
+      effect: "NoSchedule"
+    service:
+      type: NodePort
+      nodePort: 30080
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+  
+  controller:
+    nodeSelector:
+      node-role: application
+    tolerations:
+    - key: "node-role"
+      operator: "Equal"
+      value: "application"
+      effect: "NoSchedule"
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  
+  repoServer:
+    nodeSelector:
+      node-role: application
+    tolerations:
+    - key: "node-role"
+      operator: "Equal"
+      value: "application"
+      effect: "NoSchedule"
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi

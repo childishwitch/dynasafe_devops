@@ -24,11 +24,9 @@
 ```
 infrastructure/
 ├── README.md                    # 此說明文件
-├── node-config.yaml            # 節點配置 YAML
 └── helm/                       # Helm Charts
     ├── monitoring/              # 監控系統 Helm Chart
-    ├── argocd/                 # ArgoCD Helm Chart
-    └── node-config/            # 節點配置 Helm Chart
+    └── argocd/                 # ArgoCD Helm Chart
 ```
 
 ## 部署步驟
@@ -69,28 +67,19 @@ kubectl wait --for=condition=Ready nodes --all --timeout=300s
 
 #### 配置節點污點
 
-使用動態配置方式，支援環境變數：
+使用腳本配置節點標籤和污點：
 
 ```bash
-# 方法 1: 使用預設值
-envsubst < infrastructure/node-config.yaml | kubectl apply -f -
-
-# 方法 2: 使用自定義環境變數
-export CLUSTER_NAME=dynasafe-cluster
-export INFRA_NODE=dynasafe-cluster-worker
-export APP_NODES=dynasafe-cluster-worker2,dynasafe-cluster-worker3
-envsubst < infrastructure/node-config.yaml | kubectl apply -f -
-
-# 檢查配置結果
-kubectl get jobs -n kube-system
-kubectl logs -n kube-system job/node-config-job
+# 執行節點配置腳本
+chmod +x scripts/configure-nodes.sh
+./scripts/configure-nodes.sh
 ```
 
-**環境變數說明：**
-- `CLUSTER_NAME`: 叢集名稱（預設：dynasafe-cluster）
-- `CONTROL_PLANE_NODE`: Control Plane 節點名稱
-- `INFRA_NODE`: Infra 節點名稱
-- `APP_NODES`: Application 節點名稱（逗號分隔）
+**腳本功能：**
+- 配置 Control Plane 節點標籤
+- 配置 Infra 節點標籤和污點（NoSchedule）
+- 配置 Application 節點標籤和污點（NoSchedule）
+- 顯示節點狀態和污點配置
 
 #### 驗證叢集狀態
 ```bash
@@ -179,8 +168,9 @@ argocd app create nginx-demo \
 ## 部署策略
 
 ### 基礎設施管理
-- **監控系統**: 使用 Helm 或手動部署（Prometheus、Grafana、Node Exporter）
-- **叢集管理**: 使用 kind 或 CDK 管理 Kubernetes 叢集
+- **叢集管理**: 使用 kind 創建 Kubernetes 叢集
+- **節點配置**: 使用腳本配置節點標籤和污點
+- **監控系統**: 使用 Helm 部署（Prometheus、Grafana、Node Exporter）
 - **原因**: 這些組件是 ArgoCD 運行的前提條件
 
 ### 應用程式管理
