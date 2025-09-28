@@ -108,7 +108,7 @@ helm repo update
 kubectl create namespace monitoring
 
 # 部署監控系統 (Prometheus + kube-state-metrics + Node Exporter)
-helm install monitoring ./infrastructure/helm/monitoring -n monitoring
+helm install monitoring ./helm/monitoring -n monitoring
 
 # 檢查部署狀態
 kubectl get pods -n monitoring
