@@ -1,0 +1,94 @@
+---
+- name: Setup Kind Kubernetes cluster
+  hosts: localhost
+  connection: local
+  become: no
+  tasks:
+    - name: Check if Kind is installed
+      command: kind version
+      register: kind_version
+      ignore_errors: yes
+
+    - name: Install Kind if not present
+      shell: |
+        # Detect OS and architecture
+        OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+        ARCH=$(uname -m)
+        if [ "$ARCH" = "x86_64" ]; then
+          ARCH="amd64"
+        elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+          ARCH="arm64"
+        fi
+        
+        # Download and install Kind
+        curl -Lo ./kind "https://kind.sigs.k8s.io/dl/v0.30.0/kind-${OS}-${ARCH}"
+        chmod +x ./kind
+        sudo mv ./kind /usr/local/bin/kind
+      when: kind_version.rc != 0
+
+    - name: Create Kind cluster configuration
+      copy:
+        content: |
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+            kubeadmConfigPatches:
+            - |
+              kind: InitConfiguration
+              nodeRegistration:
+                kubeletExtraArgs:
+                  node-labels: "node-role.kubernetes.io/control-plane=true"
+          - role: worker
+            kubeadmConfigPatches:
+            - |
+              kind: JoinConfiguration
+              nodeRegistration:
+                kubeletExtraArgs:
+                  node-labels: "node-role=infra"
+          - role: worker
+            kubeadmConfigPatches:
+            - |
+              kind: JoinConfiguration
+              nodeRegistration:
+                kubeletExtraArgs:
+                  node-labels: "node-role=application"
+          - role: worker
+            kubeadmConfigPatches:
+            - |
+              kind: JoinConfiguration
+              nodeRegistration:
+                kubeletExtraArgs:
+                  node-labels: "node-role=application"
+        dest: /tmp/kind-config.yaml
+
+    - name: Create Kind cluster
+      shell: |
+        kind create cluster --name dynasafe-cluster --config /tmp/kind-config.yaml
+      register: kind_create
+      ignore_errors: yes
+
+    - name: Check if cluster already exists
+      shell: kind get clusters | grep dynasafe-cluster
+      register: cluster_exists
+      ignore_errors: yes
+
+    - name: Display cluster status
+      debug:
+        msg: |
+          Kind cluster status:
+          - Cluster exists: {{ cluster_exists.rc == 0 }}
+          - Create result: {{ kind_create.rc }}
+
+    - name: Configure kubectl context
+      shell: |
+        kubectl cluster-info --context kind-dynasafe-cluster
+      register: kubectl_context
+
+    - name: Display cluster information
+      debug:
+        msg: |
+          Kind cluster created successfully!
+          Cluster name: dynasafe-cluster
+          Context: kind-dynasafe-cluster
+          Nodes: 1 control-plane + 3 workers

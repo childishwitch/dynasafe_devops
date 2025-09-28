@@ -178,8 +178,23 @@ dynasafe_devops/
 - **健康檢查** - 包含 liveness 和 readiness probe
 - **資源限制** - CPU 100m, Memory 128Mi
 
+## 版本說明
+
+### Kind 版本 (main branch)
+- 使用 Kind 快速建置本地 K8s 叢集
+- 適合快速展示和測試
+- 包含完整的監控和 GitOps 功能
+
+### Ansible 版本 (feature/ansible-automation branch)
+- 使用 Ansible 自動化建置 Kind K8s 叢集
+- 完全符合作業要求的自動化流程
+- 包含完整的監控和 GitOps 功能
+- 支援虛擬環境安裝和測試
+- 自動化節點配置和應用部署
+
 ## 文檔
 
 - [完整說明文件](docs/README.md) - 包含架構圖、配置說明、監控儀表板說明
 - [架構圖](docs/architecture-diagram.md) - 系統架構 Mermaid 圖表
 - [架構說明](infrastructure/README.md) - 基礎設施配置說明
+- [Ansible 自動化](ansible/README.md) - 完整的 K8s 叢集自動化部署

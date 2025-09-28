@@ -1,0 +1,43 @@
+---
+- name: Configure Kind cluster nodes
+  hosts: localhost
+  connection: local
+  become: no
+  tasks:
+    - name: Wait for cluster to be ready
+      shell: kubectl get nodes
+      register: nodes_status
+      until: nodes_status.rc == 0
+      retries: 30
+      delay: 10
+
+    - name: Get cluster nodes
+      shell: kubectl get nodes -o name
+      register: cluster_nodes
+
+    - name: Apply node labels and taints
+      shell: |
+        # Control plane node
+        kubectl label nodes dynasafe-cluster-control-plane node-role.kubernetes.io/control-plane=true --overwrite
+        kubectl taint nodes dynasafe-cluster-control-plane node-role.kubernetes.io/control-plane:NoSchedule --overwrite
+        
+        # Infra node
+        kubectl label nodes dynasafe-cluster-worker node-role=infra --overwrite
+        kubectl taint nodes dynasafe-cluster-worker node-role=infra:NoSchedule --overwrite
+        
+        # Application nodes
+        kubectl label nodes dynasafe-cluster-worker2 node-role=application --overwrite
+        kubectl taint nodes dynasafe-cluster-worker2 node-role=application:NoSchedule --overwrite
+        
+        kubectl label nodes dynasafe-cluster-worker3 node-role=application --overwrite
+        kubectl taint nodes dynasafe-cluster-worker3 node-role=application:NoSchedule --overwrite
+
+    - name: Verify node configuration
+      shell: kubectl get nodes --show-labels
+      register: node_labels
+
+    - name: Display node configuration
+      debug:
+        msg: |
+          Node configuration completed:
+          {{ node_labels.stdout }}

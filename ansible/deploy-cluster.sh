@@ -12,8 +12,17 @@ if ! command -v ansible-playbook &> /dev/null; then
     echo "❌ Ansible is not installed. Please install Ansible first."
     echo "   Ubuntu/Debian: sudo apt install ansible"
     echo "   macOS: brew install ansible"
+    echo "   Python: pip install ansible"
     exit 1
 fi
+
+# Check Ansible version
+echo "📋 Ansible version:"
+ansible --version
+
+# Check if required collections are installed
+echo "📦 Installing required Ansible collections..."
+ansible-galaxy collection install kubernetes.core community.kubernetes || true
 
 # Check if inventory file exists
 if [ ! -f "inventory/hosts.yml" ]; then
@@ -23,29 +32,29 @@ fi
 
 echo "📋 Running Ansible playbooks..."
 
-# Step 1: Prepare nodes
-echo "🔧 Step 1: Preparing nodes..."
-ansible-playbook playbooks/01-prepare-nodes.yml
+# Step 1: Setup Kind cluster
+echo "📦 Step 1: Setting up Kind cluster..."
+ansible-playbook playbooks/01-setup-kind-cluster.yml
 
-# Step 2: Initialize cluster
-echo "🏗️  Step 2: Initializing Kubernetes cluster..."
-ansible-playbook playbooks/02-init-cluster.yml
+# Step 2: Configure nodes
+echo "⚙️ Step 2: Configuring nodes..."
+ansible-playbook playbooks/02-configure-nodes.yml
 
-# Step 3: Join worker nodes
-echo "🔗 Step 3: Joining worker nodes..."
-ansible-playbook playbooks/03-join-workers.yml
-
-# Step 4: Configure nodes
-echo "🏷️  Step 4: Configuring node labels and taints..."
-ansible-playbook playbooks/04-configure-nodes.yml
-
-# Step 5: Deploy monitoring
-echo "📊 Step 5: Deploying monitoring stack..."
+# Step 3: Deploy monitoring
+echo "📊 Step 3: Deploying monitoring stack..."
 ansible-playbook playbooks/05-deploy-monitoring.yml
 
-# Step 6: Deploy ArgoCD
-echo "🔄 Step 6: Deploying ArgoCD..."
+# Step 4: Deploy ArgoCD
+echo "🔄 Step 4: Deploying ArgoCD..."
 ansible-playbook playbooks/06-deploy-argocd.yml
+
+# Step 5: Deploy Grafana
+echo "🌐 Step 5: Deploying Grafana..."
+ansible-playbook playbooks/07-deploy-grafana.yml
+
+# Step 6: Deploy Nginx demo
+echo "🚀 Step 6: Deploying Nginx demo..."
+ansible-playbook playbooks/08-deploy-nginx-demo.yml
 
 echo "✅ Kubernetes cluster deployment completed!"
 echo ""

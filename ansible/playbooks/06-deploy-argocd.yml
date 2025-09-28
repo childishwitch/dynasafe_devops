@@ -1,76 +1,44 @@
 ---
 - name: Deploy ArgoCD
-  hosts: control_plane
-  become: yes
+  hosts: localhost
+  connection: local
+  become: no
   tasks:
     - name: Add ArgoCD Helm repository
-      kubernetes.core.helm_repository:
-        name: argo
-        repo_url: https://argoproj.github.io/argo-helm
+      shell: helm repo add argo https://argoproj.github.io/argo-helm
+      ignore_errors: yes
+
+    - name: Update Helm repositories
+      shell: helm repo update
 
     - name: Create ArgoCD namespace
-      kubernetes.core.k8s:
-        state: present
-        definition:
-          apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: "{{ argocd_namespace }}"
+      shell: kubectl create namespace {{ argocd_namespace }}
 
     - name: Deploy ArgoCD
-      kubernetes.core.helm:
-        name: argocd
-        chart_ref: argo/argo-cd
-        release_namespace: "{{ argocd_namespace }}"
-        values:
-          global:
-            namespace: "{{ argocd_namespace }}"
-          server:
-            nodeSelector:
-              node-role: application
-            tolerations:
-              - key: "node-role"
-                operator: "Equal"
-                value: "application"
-                effect: "NoSchedule"
-            service:
-              type: NodePort
-              nodePort: 30080
-            resources:
-              requests:
-                cpu: 200m
-                memory: 256Mi
-              limits:
-                cpu: 500m
-                memory: 512Mi
-          controller:
-            nodeSelector:
-              node-role: application
-            tolerations:
-              - key: "node-role"
-                operator: "Equal"
-                value: "application"
-                effect: "NoSchedule"
-          repoServer:
-            nodeSelector:
-              node-role: application
-            tolerations:
-              - key: "node-role"
-                operator: "Equal"
-                value: "application"
-                effect: "NoSchedule"
+      shell: |
+        helm install argocd argo/argo-cd \
+          --namespace {{ argocd_namespace }} \
+          --create-namespace \
+          --set server.nodeSelector.node-role=application \
+          --set server.tolerations[0].key=node-role \
+          --set server.tolerations[0].operator=Equal \
+          --set server.tolerations[0].value=application \
+          --set server.tolerations[0].effect=NoSchedule \
+          --set server.service.type=NodePort \
+          --set server.service.nodePort=30080 \
+          --set controller.nodeSelector.node-role=application \
+          --set controller.tolerations[0].key=node-role \
+          --set controller.tolerations[0].operator=Equal \
+          --set controller.tolerations[0].value=application \
+          --set controller.tolerations[0].effect=NoSchedule \
+          --set repoServer.nodeSelector.node-role=application \
+          --set repoServer.tolerations[0].key=node-role \
+          --set repoServer.tolerations[0].operator=Equal \
+          --set repoServer.tolerations[0].value=application \
+          --set repoServer.tolerations[0].effect=NoSchedule
 
     - name: Wait for ArgoCD to be ready
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Pod
-        namespace: "{{ argocd_namespace }}"
-        label_selectors:
-          - app.kubernetes.io/name=argocd-server
-      register: argocd_pods
-      until: argocd_pods.resources | length > 0
-      retries: 30
-      delay: 10
+      shell: kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n {{ argocd_namespace }} --timeout=300s
 
     - name: Get ArgoCD admin password
       shell: |

@@ -1,0 +1,166 @@
+---
+- name: Deploy Nginx demo application via ArgoCD
+  hosts: localhost
+  connection: local
+  become: no
+  tasks:
+    - name: Create nginx demo namespace
+      shell: kubectl create namespace nginx-demo || true
+
+    - name: Create Nginx deployment
+      shell: |
+        kubectl apply -f - <<EOF
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: nginx-demo
+          namespace: nginx-demo
+          labels:
+            app: nginx-demo
+        spec:
+          replicas: 2
+          selector:
+            matchLabels:
+              app: nginx-demo
+          template:
+            metadata:
+              labels:
+                app: nginx-demo
+            spec:
+              nodeSelector:
+                node-role: application
+              tolerations:
+                - key: "node-role"
+                  operator: "Equal"
+                  value: "application"
+                  effect: "NoSchedule"
+              containers:
+                - name: nginx
+                  image: nginx:1.25
+                  ports:
+                    - containerPort: 80
+                  resources:
+                    requests:
+                      cpu: 100m
+                      memory: 128Mi
+                    limits:
+                      cpu: 200m
+                      memory: 256Mi
+                  livenessProbe:
+                    httpGet:
+                      path: /
+                      port: 80
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+                  readinessProbe:
+                    httpGet:
+                      path: /
+                      port: 80
+                    initialDelaySeconds: 5
+                    periodSeconds: 5
+                  volumeMounts:
+                    - name: nginx-config
+                      mountPath: /usr/share/nginx/html
+              volumes:
+                - name: nginx-config
+                  configMap:
+                    name: nginx-demo-config
+        EOF
+
+    - name: Create Nginx service
+      shell: |
+        kubectl apply -f - <<EOF
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: nginx-demo-service
+          namespace: nginx-demo
+        spec:
+          type: NodePort
+          ports:
+            - port: 80
+              targetPort: 80
+              nodePort: 30080
+          selector:
+            app: nginx-demo
+        EOF
+
+    - name: Create Nginx configmap
+      shell: |
+        kubectl apply -f - <<EOF
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: nginx-demo-config
+          namespace: nginx-demo
+        data:
+          index.html: |
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>DynaSafe DevOps Demo</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+                    .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                    h1 { color: #2c3e50; text-align: center; }
+                    .info { background: #ecf0f1; padding: 20px; border-radius: 5px; margin: 20px 0; }
+                    .status { color: #27ae60; font-weight: bold; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>🚀 DynaSafe DevOps Demo</h1>
+                    <div class="info">
+                        <h2>✅ 部署成功！</h2>
+                        <p>這個 Nginx 應用程式透過 ArgoCD 成功部署到 Kubernetes 叢集。</p>
+                        <p class="status">狀態：運行中</p>
+                        <p>節點：Application Node</p>
+                        <p>命名空間：nginx-demo</p>
+                    </div>
+                    <div class="info">
+                        <h3>🔧 技術規格</h3>
+                        <ul>
+                            <li>Kubernetes 版本：1.30.0</li>
+                            <li>容器：Nginx 1.25</li>
+                            <li>副本數：2</li>
+                            <li>資源限制：CPU 200m, Memory 256Mi</li>
+                            <li>健康檢查：Liveness & Readiness Probes</li>
+                        </ul>
+                    </div>
+                </div>
+            </body>
+            </html>
+        EOF
+
+    - name: Create ArgoCD application for Nginx
+      shell: |
+        kubectl apply -f - <<EOF
+        apiVersion: argoproj.io/v1alpha1
+        kind: Application
+        metadata:
+          name: nginx-demo
+          namespace: argocd
+        spec:
+          project: default
+          source:
+            repoURL: https://github.com/childishwitch/dynasafe_devops
+            targetRevision: HEAD
+            path: applications/nginx
+          destination:
+            server: https://kubernetes.default.svc
+            namespace: nginx-demo
+          syncPolicy:
+            syncOptions:
+            - CreateNamespace=true
+        EOF
+
+    - name: Wait for Nginx deployment to be ready
+      shell: kubectl wait --for=condition=available deployment/nginx-demo -n nginx-demo --timeout=300s
+
+    - name: Display Nginx access information
+      debug:
+        msg: |
+          Nginx demo application deployed successfully!
+          Access via NodePort: http://{{ ansible_default_ipv4.address }}:30080
+          Or port-forward: kubectl port-forward svc/nginx-demo-service 30080:80 -n nginx-demo
